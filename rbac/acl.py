@@ -95,6 +95,28 @@ class Registry(object):
                 is_allowed = True
         return is_allowed
 
+    def revoke(self, role, operation, resource, assertion=None):
+        """Revoke a rule.
+        """
+        assert not role or role in self._roles
+        assert not resource or resource in self._resources
+    
+        roles = set(get_family(self._roles, role))
+        operations = set([None, operation])
+        resources = set(get_family(self._resources, resource))
+    
+        is_allowed = None
+        default_assertion = lambda *args: True
+    
+        for permission in itertools.product(roles, operations, resources):
+            if permission in self._denied:
+                del(self._denied[permission])
+                return True
+            if permission in self._allowed:
+                del(self._denied[permission])
+                return True
+        return False
+
 
 def get_family(all_parents, current):
     """Iterate current object and its all parents recursively."""
